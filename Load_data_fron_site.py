@@ -26,5 +26,5 @@ class SaverTui(Saver):
     def save(self):
         r = requests.get(self.url)
         r.encoding = 'utf-8'
-        with open('tuiru.html', 'w') as f:
+        with open('tuiru.json', 'w') as f:
             f.write(r.text)

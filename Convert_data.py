@@ -1,19 +1,20 @@
 import json
 from abc import ABC, abstractmethod
-from bs4 import BeautifulSoup
+
 
 class Converter(ABC):
     @abstractmethod
-    def write(self, data, filename):
+    def write(self, data):
         pass
 
 
-class JSONConvert(Converter):
-    def write(self, data, filename):
-        html1 = open('mebelshara.html').read()
-        soup = BeautifulSoup(html1, 'lxml')
-        div = soup.find('dic', {'class':'adress'})
-        with open(filename, 'w') as f:
-            f.write(json.dumps({
-                'adress':
-            }))
+class JSONConvertMebelShara(Converter):
+    def write(self, data):
+        with open('MebelShara.json', 'w') as f:
+            f.write(json.dumps(data, indent=2))
+
+
+class JSONConvertTuiRu(Converter):
+    def write(self, data):
+        with open('TuiRu.json', 'w') as f:
+            f.write(json.dumps(data, indent=2))
