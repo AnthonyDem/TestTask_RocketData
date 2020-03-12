@@ -1,5 +1,4 @@
 import json
-
 from bs4 import BeautifulSoup
 from Load_data_fron_site import SaverMebel, SaverTui
 from bs4.element import Tag
@@ -14,7 +13,7 @@ url2 = 'https://www.tui.ru/api/office/list/?cityId=1&subwayId=&hoursFrom=&hoursT
 def make_dict(city_name: str, shop: Tag):
     return {
         'address': city_name + ', ' + shop['data-shop-address'],
-        'latlon': [shop['data-shop-latitude'], shop['data-shop-longitude']],
+        'latlon': [float(shop['data-shop-latitude']), float(shop['data-shop-longitude'])],
         'name': 'Мебель Шара',
         'phones': ['8 800 551 06 10'],
         'working_hours': [shop['data-shop-mode1'], shop['data-shop-mode2']],
@@ -25,15 +24,21 @@ def make_tui_right_dict():
     tui = []
     file = load()
     for i in file:
-        # phones = i.get('phones')
-        # working_hours = i.get('hoursOfOperation')
-        # [i.get('phone') for i in phones]
-        '''[["пн-пт" + i.get('workdays').get('startStr') + 'до' + i.get('workdays').get('endStr'),
-          'сб-вс' + i.get('saturday').get('startStr') + 'до' + i.get('saturday').get('endStr')]
-         for i in working_hours]'''
-        di = {'address': i.get('address'), 'latlon': [i.get('latitude'), i.get('longitude')], 'name': i.get('name'),
-              'phones': i.get('phones'),
-              'working_days': i.get('hoursOfOperation')}
+        phones = i.get('phones')
+        working_hours_weekdays = i.get('hoursOfOperation').get('workdays')
+        working_hours_weekends = i.get('hoursOfOperation').get('saturday')
+        if working_hours_weekends.get('startStr') is None:
+            di = {'address': i.get('address'), 'latlon': [i.get('latitude'), i.get('longitude')], 'name': i.get('name'),
+                  'phones': [i.get('phone') for i in phones],
+                  'working_days': ["пн-вс " + working_hours_weekdays.get('startStr') + " до " +
+                                   working_hours_weekdays.get('endStr'), "сб-вс: Выходной"]}
+
+        else:
+            di = {'address': i.get('address'), 'latlon': [i.get('latitude'), i.get('longitude')], 'name': i.get('name'),
+                  'phones': [i.get('phone') for i in phones],
+                  'working_days': ["пн-вс " + working_hours_weekdays.get('startStr') + " до " +
+                                   working_hours_weekdays.get('endStr'), "сб-вс " +
+                                   working_hours_weekends.get('startStr') + '-' + working_hours_weekends.get('endStr')]}
         tui.append(di)
     return tui
 
@@ -54,10 +59,10 @@ def city_shops(city_div: Tag):
 
 
 def main():
-    # saver = SaverMebel(url1)
-    # saver.save()
-    # saver = SaverTui(url2)
-    # saver.save()
+    saver = SaverMebel(url1)
+    saver.save()
+    saver = SaverTui(url2)
+    saver.save()
     html1 = open('mebelshara.html').read()
     js_out = make_tui_right_dict()
     soup = BeautifulSoup(html1, 'lxml')
@@ -67,10 +72,11 @@ def main():
     for city in cities:
         shop_list += city_shops(city)
 
-    print(js_out)
-    # print(shop_list)
-    # conv = JSONConvertTuiRu()
-    # conv.write(data=tui)
+    conv_tui = JSONConvertTuiRu()
+    conv_tui.write(data=js_out)
+
+    conv_mebel = JSONConvertMebelShara()
+    conv_mebel.write(data=shop_list)
 
 
 '''def argparser():

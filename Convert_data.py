@@ -11,10 +11,10 @@ class Converter(ABC):
 class JSONConvertMebelShara(Converter):
     def write(self, data):
         with open('MebelShara.json', 'w') as f:
-            f.write(json.dumps(data, indent=2))
+            f.write(json.dumps(data, indent=2, ensure_ascii=False))
 
 
 class JSONConvertTuiRu(Converter):
     def write(self, data):
         with open('TuiRu.json', 'w') as f:
-            f.write(json.dumps(data, indent=2))
+            f.write(json.dumps(data, indent=2, ensure_ascii=False))
